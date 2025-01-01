@@ -8,7 +8,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Weather Forecast App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -29,13 +29,13 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Welcome to the Home Page!',
+              'Welcome to the Weather Forecast App!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20), // Space between text and button
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Navigate to the Login Page
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => LoginPage()),
@@ -82,7 +82,7 @@ class LoginPage extends StatelessWidget {
             SizedBox(height: 20),
             TextField(
               controller: passwordController,
-              obscureText: true, // Hides the password
+              obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Password',
                 border: OutlineInputBorder(),
@@ -91,8 +91,10 @@ class LoginPage extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Handle login functionality
-                print('Login pressed');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OptionsPage()),
+                );
               },
               child: Text('Login'),
             ),
@@ -103,7 +105,6 @@ class LoginPage extends StatelessWidget {
                 Text("Don't have an account?"),
                 TextButton(
                   onPressed: () {
-                    // Navigate to Create Account Page
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -171,12 +172,91 @@ class CreateAccountPage extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Handle account creation functionality
                 print('Account created');
               },
               child: Text('Create Account'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class OptionsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Options'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Choose an Option',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to Provide Information Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProvideInfoPage()),
+                );
+              },
+              child: Text('Provide Information'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to Get Information Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GetInfoPage()),
+                );
+              },
+              child: Text('Get Information'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ProvideInfoPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Provide Information'),
+      ),
+      body: Center(
+        child: Text(
+          'Here you can provide weather-related information!',
+          style: TextStyle(fontSize: 18),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+}
+
+class GetInfoPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Get Information'),
+      ),
+      body: Center(
+        child: Text(
+          'Here you can get weather predictions based on AI!',
+          style: TextStyle(fontSize: 18),
+          textAlign: TextAlign.center,
         ),
       ),
     );
