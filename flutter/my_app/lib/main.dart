@@ -409,18 +409,133 @@ class OptionsPage extends StatelessWidget {
 }
 
 // Provide Information Page
-class ProvideInfoPage extends StatelessWidget {
+class ProvideInfoPage extends StatefulWidget {
+  @override
+  _ProvideInfoPageState createState() => _ProvideInfoPageState();
+}
+
+class _ProvideInfoPageState extends State<ProvideInfoPage> {
+  // Variables to hold the state of user input
+  String _selectedWeather = "Sunny"; // Default weather type
+  double _rainAmount = 0.0; // Rain amount slider value
+  String _stayingOrMoving = "Staying"; // Default staying/moving choice
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Provide Information'),
       ),
-      body: Center(
-        child: Text(
-          'Here you can provide weather-related information!',
-          style: TextStyle(fontSize: 18),
-          textAlign: TextAlign.center,
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Question 1: What kind of weather right now?
+            Text(
+              'What kind of weather is it right now?',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            DropdownButton<String>(
+              value: _selectedWeather,
+              items: [
+                "Sunny",
+                "Rainy",
+                "Windy",
+                "Cloudy",
+                //"Snowy",
+              ].map((weather) {
+                return DropdownMenuItem<String>(
+                  value: weather,
+                  child: Text(weather),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedWeather = value!;
+                });
+              },
+            ),
+            SizedBox(height: 20),
+
+            // Question 2: Rain bar
+            Text(
+              'How much rain is there? ',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Text('light'),
+                Expanded(
+                  child: Slider(
+                    value: _rainAmount,
+                    min: 0,
+                    max: 100,
+                    divisions: 20,
+                    label: "${_rainAmount.toInt()} %",
+                    onChanged: (value) {
+                      setState(() {
+                        _rainAmount = value;
+                      });
+                    },
+                  ),
+                ),
+                Text('heavy'),
+              ],
+            ),
+            SizedBox(height: 20),
+
+            // Question 3: Are you staying or moving within 15 minutes?
+            Text(
+              'Are you staying or moving within the next 15 minutes?',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: RadioListTile<String>(
+                    title: Text('Staying'),
+                    value: "Staying",
+                    groupValue: _stayingOrMoving,
+                    onChanged: (value) {
+                      setState(() {
+                        _stayingOrMoving = value!;
+                      });
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: RadioListTile<String>(
+                    title: Text('Moving'),
+                    value: "Moving",
+                    groupValue: _stayingOrMoving,
+                    onChanged: (value) {
+                      setState(() {
+                        _stayingOrMoving = value!;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 30),
+
+            // Submit Button
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  // Handle form submission logic here
+                  print('Weather: $_selectedWeather');
+                  print('Rain: ${_rainAmount.toInt()} mm');
+                  print('Staying or Moving: $_stayingOrMoving');
+                },
+                child: Text('Submit'),
+              ),
+            ),
+          ],
         ),
       ),
     );
