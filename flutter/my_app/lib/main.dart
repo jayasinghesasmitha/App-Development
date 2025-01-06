@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 
 void main() {
@@ -365,6 +367,27 @@ class CreateAccountPage extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+void createAccount(dynamic usernameController, dynamic emailController, dynamic passwordController) async {
+  final response = await http.post(
+    Uri.parse('http://localhost:12330/create_account'), // Your API endpoint
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, String>{
+      'username': usernameController.text,
+      'email': emailController.text,
+      'password': passwordController.text,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    print('Account created successfully');
+    // You can navigate to the next page or show success
+  } else {
+    print('Failed to create account');
+    // Handle error
   }
 }
 
