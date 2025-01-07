@@ -4,7 +4,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
 void main() {
   runApp(MyApp());
 }
@@ -250,6 +249,35 @@ class CreateAccountPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  Future<void> createAccount(String username, String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:12330/create_account'), // Replace with your backend API URL
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'username': username,
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        print('Account created successfully: ${responseBody['message']}');
+        // Navigate to the next page or display success message
+      } else {
+        print('Failed to create account: ${response.body}');
+        // Show error message
+      }
+    } catch (e) {
+      print('Error connecting to the server: $e');
+      // Handle connection errors
+    }
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -369,27 +397,7 @@ class CreateAccountPage extends StatelessWidget {
     );
   }
 }
-void createAccount(dynamic usernameController, dynamic emailController, dynamic passwordController) async {
-  final response = await http.post(
-    Uri.parse('http://localhost:12330/create_account'), // Your API endpoint
-    headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-    body: jsonEncode(<String, String>{
-      'username': usernameController.text,
-      'email': emailController.text,
-      'password': passwordController.text,
-    }),
-  );
 
-  if (response.statusCode == 200) {
-    print('Account created successfully');
-    // You can navigate to the next page or show success
-  } else {
-    print('Failed to create account');
-    // Handle error
-  }
-}
 
 // Options Page
 class OptionsPage extends StatelessWidget {
