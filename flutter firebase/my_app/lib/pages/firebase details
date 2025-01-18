@@ -1,0 +1,21 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAt2nLKOH4YxY70aTZ1qwxUV2hdwNLWJMo",
+  authDomain: "weather-app-8dff8.firebaseapp.com",
+  projectId: "weather-app-8dff8",
+  storageBucket: "weather-app-8dff8.firebasestorage.app",
+  messagingSenderId: "426540662257",
+  appId: "1:426540662257:web:ca195e65993ed6b4215850",
+  measurementId: "G-MZNZ4WW2R2"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
