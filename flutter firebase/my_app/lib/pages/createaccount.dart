@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:firebase_database/firebase_database.dart';
 
 class CreateAccountPage extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController();
@@ -9,35 +8,24 @@ class CreateAccountPage extends StatelessWidget {
 
   CreateAccountPage({super.key});
 
+  // Function to store account data in Firebase Realtime Database
   Future<void> createAccount(String username, String email, String password) async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost:12330/create_account'), // Replace with your backend API URL
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
-          'username': username,
-          'email': email,
-          'password': password,
-        }),
-      );
+  try {
+    final database = FirebaseDatabase.instance.ref(); 
+    final userRef = database.child('users').push(); 
 
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-        print('Account created successfully: ${responseBody['message']}');
-        // Navigate to the next page or display success message
-      } else {
-        print('Failed to create account: ${response.body}');
-        // Show error message
-      }
-    } catch (e) {
-      print('Error connecting to the server: $e');
-      // Handle connection errors
-    }
+    await userRef.set({
+      'username': username,
+      'email': email,
+      'password': password, 
+    });
+
+    print('Account created successfully!');
+  } catch (e) {
+    print('Failed to create account: $e');
   }
+}
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,7 +84,6 @@ class CreateAccountPage extends StatelessWidget {
                 decoration: InputDecoration(
                   prefixIcon: Icon(Icons.lock_outline),
                   labelText: 'PASSWORD',
-                  hintText: '',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
@@ -105,8 +92,18 @@ class CreateAccountPage extends StatelessWidget {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  // Handle account creation logic here
-                  print('Account created');
+                  final username = usernameController.text.trim();
+                  final email = emailController.text.trim();
+                  final password = passwordController.text.trim();
+
+                  if (username.isNotEmpty && email.isNotEmpty && password.isNotEmpty) {
+                    createAccount(username, email, password);
+                  } else {
+                    Text(
+                    'Please fill in all fields',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,

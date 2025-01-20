@@ -1,10 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:my_app/pages/createaccount.dart';
 import 'package:my_app/pages/options.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  Future<bool> validateUser(String email, String password) async {
+    try {
+      final database = FirebaseDatabase.instance.ref();
+      final usersSnapshot = await database.child('users').get();
+
+      if (usersSnapshot.exists) {
+        final users = Map<String, dynamic>.from(usersSnapshot.value as Map);
+        for (final user in users.values) {
+          if (user['email'] == email && user['password'] == password) {
+            return true;
+          }
+        }
+      }
+      return false;
+    } catch (e) {
+      print('Error validating user: $e');
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,11 +83,33 @@ class LoginPage extends StatelessWidget {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => OptionsPage()),
-                  );
+                onPressed: () async {
+                  final email = emailController.text.trim();
+                  final password = passwordController.text.trim();
+
+                  if (email.isNotEmpty && password.isNotEmpty) {
+                    final isValid = await validateUser(email, password);
+                    if (isValid) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => OptionsPage()),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Invalid email or password'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Please fill in all fields'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
