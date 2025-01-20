@@ -6,11 +6,8 @@ import 'pages/login.dart';
 import 'pages/options.dart';
 import 'pages/provideinfo.dart';
 import 'pages/result.dart';
-import 'package:firebase_core/firebase_core.dart';
 
-void main() async{
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+void main() {
   runApp(MyApp());
 }
 

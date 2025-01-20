@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/pages/createaccount.dart';
 import 'package:my_app/pages/options.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +52,7 @@ class LoginPage extends StatelessWidget {
                 decoration: InputDecoration(
                   prefixIcon: Icon(Icons.lock_outline),
                   labelText: 'PASSWORD',
+                  hintText: '',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
@@ -63,38 +62,11 @@ class LoginPage extends StatelessWidget {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () async {
-                  try {
-                    // Firebase Authentication login process
-                    UserCredential userCredential =
-                        await _auth.signInWithEmailAndPassword(
-                      email: emailController.text.trim(),
-                      password: passwordController.text.trim(),
-                    );
-
-                    // Navigate to OptionsPage on successful login
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => OptionsPage()),
-                    );
-                  } catch (e) {
-                    // Show error message if login fails
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('Login Failed'),
-                        content: Text(e.toString()),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('OK'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => OptionsPage()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,

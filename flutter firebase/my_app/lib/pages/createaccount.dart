@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CreateAccountPage extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController();
@@ -9,27 +9,35 @@ class CreateAccountPage extends StatelessWidget {
 
   CreateAccountPage({super.key});
 
-  Future<void> createAccount(String email, String password) async {
+  Future<void> createAccount(String username, String email, String password) async {
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
+      final response = await http.post(
+        Uri.parse('http://localhost:12330/create_account'), // Replace with your backend API URL
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'username': username,
+          'email': email,
+          'password': password,
+        }),
       );
-      print('Account created successfully!');
-      // Navigate to the next page or display success message
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        print('The password provided is too weak.');
-      } else if (e.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        print('Account created successfully: ${responseBody['message']}');
+        // Navigate to the next page or display success message
       } else {
-        print('Error: ${e.message}');
+        print('Failed to create account: ${response.body}');
+        // Show error message
       }
     } catch (e) {
-      print('Error: $e');
+      print('Error connecting to the server: $e');
+      // Handle connection errors
     }
   }
 
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,9 +105,8 @@ class CreateAccountPage extends StatelessWidget {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  final email = emailController.text.trim();
-                  final password = passwordController.text.trim();
-                  createAccount(email, password);
+                  // Handle account creation logic here
+                  print('Account created');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
