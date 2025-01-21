@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:my_app/firebase_options.dart';
 import 'pages/createaccount.dart';
 import 'pages/getinfo.dart';
 import 'pages/homepage.dart';
@@ -24,23 +23,52 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'App Home Page',
+      title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
       initialRoute: '/',
-      routes: {
-        '/': (context) => HomePage(), 
-        '/createaccount': (context) => CreateAccountPage(),
-        '/getinfo': (context) => GetInfoPage(),
-        '/login': (context) => LoginPage(),
-        '/options': (context) => OptionsPage(),
-        '/provideinfo': (context) => ProvideInfoPage(),
-        '/result': (context) => ResultPage(selectedOption: '',),
+      onGenerateRoute: (settings) {
+        // Handle named routes with arguments
+        if (settings.name == '/options') {
+          final args = settings.arguments as String; 
+          return MaterialPageRoute(
+            builder: (context) => OptionsPage(email: args),
+          );
+        } else if (settings.name == '/result') {
+          final args = settings.arguments as String; 
+          return MaterialPageRoute(
+            builder: (context) => ResultPage(selectedOption: args),
+          );
+        }
+
+        // Default routes
+        final routes = {
+          '/': (context) => HomePage(),
+          '/createaccount': (context) => CreateAccountPage(),
+          '/getinfo': (context) => GetInfoPage(),
+          '/login': (context) => LoginPage(),
+          '/provideinfo': (context) => ProvideInfoPage(),
+        };
+
+        final builder = routes[settings.name];
+        if (builder != null) {
+          return MaterialPageRoute(builder: builder);
+        }
+
+        // Handle unknown routes
+        return MaterialPageRoute(
+          builder: (context) => const Scaffold(
+            body: Center(child: Text('Page not found')),
+          ),
+        );
       },
     );
   }
 }
+

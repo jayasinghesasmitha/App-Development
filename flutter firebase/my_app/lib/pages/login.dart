@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:my_app/pages/createaccount.dart';
 import 'package:my_app/pages/options.dart';
 import 'package:http/http.dart' as http;
@@ -89,12 +88,15 @@ class LoginPage extends StatelessWidget {
                   final email = emailController.text.trim();
                   final password = passwordController.text.trim();
 
+                  // Simulate login logic and retrieve the email
+                  String userEmail = "example@example.com";
+
                   if (email.isNotEmpty && password.isNotEmpty) {
                     final isValid = await validateUser(email, password);
                     if (isValid) {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => OptionsPage()),
+                        MaterialPageRoute(builder: (context) => OptionsPage(email: userEmail),),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(

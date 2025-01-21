@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:my_app/pages/options.dart';
 
 class ConfirmationPage extends StatelessWidget {
+  final String email;
+
+  const ConfirmationPage({super.key, required this.email});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +27,9 @@ class ConfirmationPage extends StatelessWidget {
                 // Navigate to the OptionsPage
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => OptionsPage()),
+                  MaterialPageRoute(
+                    builder: (context) => OptionsPage(email: email),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(

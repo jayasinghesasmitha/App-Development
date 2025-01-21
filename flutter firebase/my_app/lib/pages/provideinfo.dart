@@ -56,7 +56,7 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ConfirmationPage(),
+                        builder: (context) => ConfirmationPage(email: '',),
                       ),
                     );
                   },
