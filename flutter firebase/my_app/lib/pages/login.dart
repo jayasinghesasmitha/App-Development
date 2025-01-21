@@ -2,31 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:my_app/pages/createaccount.dart';
 import 'package:my_app/pages/options.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   Future<bool> validateUser(String email, String password) async {
-    try {
-      final database = FirebaseDatabase.instance.ref();
-      final usersSnapshot = await database.child('users').get();
+  try {
+    final url = Uri.parse('http://localhost:3000/login');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
 
-      if (usersSnapshot.exists) {
-        final users = Map<String, dynamic>.from(usersSnapshot.value as Map);
-        for (final user in users.values) {
-          if (user['email'] == email && user['password'] == password) {
-            return true;
-          }
-        }
-      }
-      return false;
-    } catch (e) {
-      print('Error validating user: $e');
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      print('Login failed: ${response.body}');
       return false;
     }
+  } catch (e) {
+    print('Error: $e');
+    return false;
   }
-
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(

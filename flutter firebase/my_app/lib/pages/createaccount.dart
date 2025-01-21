@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:http/http.dart' as http;
 
 class CreateAccountPage extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController();
@@ -11,18 +13,20 @@ class CreateAccountPage extends StatelessWidget {
   // Function to store account data in Firebase Realtime Database
   Future<void> createAccount(String username, String email, String password) async {
   try {
-    final database = FirebaseDatabase.instance.ref(); 
-    final userRef = database.child('users').push(); 
+    final url = Uri.parse('http://localhost:3000/create-account');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'username': username, 'email': email, 'password': password}),
+    );
 
-    await userRef.set({
-      'username': username,
-      'email': email,
-      'password': password, 
-    });
-
-    print('Account created successfully!');
+    if (response.statusCode == 201) {
+      print('Account created successfully.');
+    } else {
+      print('Failed to create account: ${response.body}');
+    }
   } catch (e) {
-    print('Failed to create account: $e');
+    print('Error: $e');
   }
 }
 

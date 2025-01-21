@@ -1,68 +1,69 @@
 const express = require('express');
-const cors = require('cors');
-const { Pool } = require('pg');
-const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
+const admin = require('firebase-admin');
+const cors = require('cors');
 
-// Initialize Express app
+// Initialize Firebase Admin SDK
+const serviceAccount = require('C:\\Users\\ASUS\\Documents\\GitHub\\App-Development\\flutter firebase\\backend\\weather-app-8dff8-firebase-adminsdk-fbsvc-341ee5b4cb.json');
+
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://weather-app-8dff8-default-rtdb.asia-southeast1.firebasedatabase.app"
+});
+
+const db = admin.database();
 const app = express();
-const port = 12330;
+const PORT = 3000;
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// PostgreSQL client configuration
-const pool = new Pool({
-  user: 'postgres', // Your PostgreSQL username
-  host: 'localhost',
-  database: 'weather_app', // Your database name
-  password: 'sasmitha', // Your PostgreSQL password
-  port: 5432,
-});
-
-// Test database connection
-pool.connect((err) => {
-  if (err) {
-    console.error('Error connecting to the database:', err);
-  } else {
-    console.log('Connected to the database');
-  }
-});
-
-// API endpoint for creating an account
-app.post('/create_account', async (req, res) => {
+// Route to create a new user
+app.post('/create-account', async (req, res) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
-    return res.status(400).json({ message: 'Please provide all fields.' });
+    return res.status(400).send({ message: 'All fields are required.' });
   }
 
   try {
-    // Hash the password before storing
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insert the new user into the database
-    const result = await pool.query(
-      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
-      [username, email, hashedPassword]
-    );
-
-    // Send back success response
-    return res.status(200).json({
-      message: 'Account created successfully',
-      user: result.rows[0],
-    });
+    const usersRef = db.ref('users');
+    await usersRef.push({ username, email, password });
+    res.status(201).send({ message: 'Account created successfully.' });
   } catch (error) {
-    if (error.code === '23505') { // Unique constraint violation (e.g., duplicate email)
-      return res.status(400).json({ message: 'Email already exists.' });
-    }
-    console.error('Error creating account:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    res.status(500).send({ message: 'Failed to create account.', error });
   }
 });
 
-// Start the server and bind to localhost
-app.listen(port, 'localhost', () => {
-  console.log(`Server running on http://localhost:${port}`);
+// Route to validate user login
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).send({ message: 'Email and password are required.' });
+  }
+
+  try {
+    const usersSnapshot = await db.ref('users').once('value');
+    const users = usersSnapshot.val();
+
+    if (users) {
+      const isValid = Object.values(users).some(
+        (user) => user.email === email && user.password === password
+      );
+
+      if (isValid) {
+        return res.status(200).send({ message: 'Login successful.' });
+      }
+    }
+
+    res.status(401).send({ message: 'Invalid email or password.' });
+  } catch (error) {
+    res.status(500).send({ message: 'Error validating user.', error });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
