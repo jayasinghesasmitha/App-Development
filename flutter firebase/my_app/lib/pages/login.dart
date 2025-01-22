@@ -8,26 +8,28 @@ class LoginPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  Future<bool> validateUser(String email, String password) async {
-  try {
-    final url = Uri.parse('http://localhost:3000/login');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
+  Future<Map<String, dynamic>?> validateUser(String email, String password) async {
+    try {
+      final url = Uri.parse('http://localhost:3000/login');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
 
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      print('Login failed: ${response.body}');
-      return false;
+      if (response.statusCode == 200) {
+        // Successful login; return user details
+        return jsonDecode(response.body);
+      } else {
+        print('Login failed: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Error: $e');
+      return null;
     }
-  } catch (e) {
-    print('Error: $e');
-    return false;
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,7 +76,6 @@ class LoginPage extends StatelessWidget {
                 decoration: InputDecoration(
                   prefixIcon: Icon(Icons.lock_outline),
                   labelText: 'PASSWORD',
-                  hintText: '',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
@@ -88,15 +89,17 @@ class LoginPage extends StatelessWidget {
                   final email = emailController.text.trim();
                   final password = passwordController.text.trim();
 
-                  // Simulate login logic and retrieve the email
-                  String userEmail = "example@example.com";
-
                   if (email.isNotEmpty && password.isNotEmpty) {
-                    final isValid = await validateUser(email, password);
-                    if (isValid) {
+                    final userDetails = await validateUser(email, password);
+                    if (userDetails != null) {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => OptionsPage(email: userEmail),),
+                        MaterialPageRoute(
+                          builder: (context) => OptionsPage(
+                            // Pass actual email
+                            email: userDetails['email'], 
+                          ),
+                        ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -148,7 +151,8 @@ class LoginPage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => CreateAccountPage()),
+                          builder: (context) => CreateAccountPage(),
+                        ),
                       );
                     },
                     child: Text(

@@ -8,8 +8,10 @@ class OptionsPage extends StatelessWidget {
   final String email;
   const OptionsPage({super.key, required this.email});
 
+  String get apiUrl => 'http:////localhost:3000/save-selection'; 
+
   Future<void> saveSelection(String selection) async {
-    final url = Uri.parse('http://10.0.2.2:3000/save-selection');
+    final url = Uri.parse(apiUrl);
     try {
       final response = await http.post(
         url,
