@@ -1,138 +1,208 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:my_app/pages/result.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart' as latlong2;
+import 'package:my_app/pages/options.dart';
+
+class GetInfoPage extends StatefulWidget {
+  @override
+  _GetInfoPageState createState() => _GetInfoPageState();
+}
 
 class _GetInfoPageState extends State<GetInfoPage> {
-  String? selectedOption; // To store the selected poll option
-  LatLng? selectedLocation; // To store the selected location from the map
-  GoogleMapController? mapController; // Map controller
+  String? selectedOption;
+  latlong2.LatLng? selectedLocation;
+  MapController mapController = MapController();
+  bool showResult = false;
 
   void handleSubmit() {
     if (selectedOption == 'Different Location' && selectedLocation == null) {
-      // Show an error if "Different Location" is selected but no location is chosen
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please select a location on the map.'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
+    
+    setState(() {
+      showResult = true;
+    });
 
-    // Navigate to the ResultPage with the selected details
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ResultPage(
-          selectedOption: selectedOption!,
-          selectedLocation: selectedLocation,
-        ),
-      ),
-    );
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const OptionsPage(email: '',)),
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Get Weather Information'),
+        title: Text(showResult ? 'Weather Result' : 'Get Weather Information'),
+        leading: showResult 
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => setState(() => showResult = false),
+              )
+            : null,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'What area do you want to know the weather report?',
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(height: 10),
-            // Poll options
-            Row(
-              children: [
-                Expanded(
-                  child: RadioListTile<String>(
-                    title: Text('Your Current Location'),
-                    value: 'Current Location',
-                    groupValue: selectedOption,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedOption = value;
-                        selectedLocation = null; // Clear selected location
-                      });
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: RadioListTile<String>(
-                    title: Text('Different Location'),
-                    value: 'Different Location',
-                    groupValue: selectedOption,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedOption = value;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-            if (selectedOption == 'Different Location') ...[
-              SizedBox(height: 20),
-              Text(
-                'Please select the location:',
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 10),
-              // Google Maps widget
+      body: showResult ? buildResultView() : buildInputView(),
+    );
+  }
+
+  Widget buildInputView() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'What area do you want to know the weather report?',
+            style: TextStyle(fontSize: 18),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
               Expanded(
-                child: GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: LatLng(37.7749, -122.4194), // Default location
-                    zoom: 10,
-                  ),
-                  onMapCreated: (controller) {
-                    mapController = controller;
-                  },
-                  onTap: (LatLng location) {
+                child: RadioListTile<String>(
+                  title: const Text('Your Current Location'),
+                  value: 'Current Location',
+                  groupValue: selectedOption,
+                  onChanged: (value) {
                     setState(() {
-                      selectedLocation = location;
+                      selectedOption = value;
+                      selectedLocation = null;
                     });
                   },
-                  markers: selectedLocation != null
-                      ? {
-                          Marker(
-                            markerId: MarkerId('selectedLocation'),
-                            position: selectedLocation!,
-                          )
-                        }
-                      : {},
                 ),
               ),
-              if (selectedLocation != null) ...[
-                SizedBox(height: 10),
-                Text(
-                  'Selected Location: ${selectedLocation!.latitude}, ${selectedLocation!.longitude}',
-                  style: TextStyle(fontSize: 16),
+              Expanded(
+                child: RadioListTile<String>(
+                  title: const Text('Different Location'),
+                  value: 'Different Location',
+                  groupValue: selectedOption,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedOption = value;
+                    });
+                  },
                 ),
-              ]
+              ),
             ],
-            SizedBox(height: 20),
-            // Submit button
-            Center(
-              child: ElevatedButton(
-                onPressed: handleSubmit,
-                child: Text('Submit'),
+          ),
+          if (selectedOption == 'Different Location') ...[
+            const SizedBox(height: 20),
+            const Text(
+              'Please select the location:',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: FlutterMap(
+                mapController: mapController,
+                options: MapOptions(
+                  initialCenter: const latlong2.LatLng(37.7749, -122.4194),
+                  initialZoom: 10,
+                  onTap: (tapPosition, point) {
+                    setState(() {
+                      selectedLocation = point;
+                    });
+                  },
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    subdomains: const ['a', 'b', 'c'],
+                  ),
+                  if (selectedLocation != null)
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: selectedLocation!,
+                          width: 80,
+                          height: 80,
+                          child: const Icon(
+                            Icons.location_pin,
+                            color: Colors.red,
+                            size: 40,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
               ),
             ),
+            if (selectedLocation != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                'Selected Location: ${selectedLocation!.latitude}, ${selectedLocation!.longitude}',
+                style: const TextStyle(fontSize: 16),
+              ),
+            ]
           ],
-        ),
+          const SizedBox(height: 20),
+          Center(
+            child: ElevatedButton(
+              onPressed: handleSubmit,
+              child: const Text('Submit'),
+            ),
+          ),
+        ],
       ),
     );
   }
-}
 
-class GetInfoPage extends StatefulWidget {
-  @override
-  _GetInfoPageState createState() => _GetInfoPageState();
+  Widget buildResultView() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Selected Option: $selectedOption',
+            style: const TextStyle(fontSize: 18),
+          ),
+        ),
+        if (selectedLocation != null) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              'Latitude: ${selectedLocation!.latitude}, Longitude: ${selectedLocation!.longitude}',
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+          Expanded(
+            child: FlutterMap(
+              options: MapOptions(
+                initialCenter: selectedLocation!,
+                initialZoom: 14,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  subdomains: const ['a', 'b', 'c'],
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: selectedLocation!,
+                      width: 80,
+                      height: 80,
+                      child: const Icon(
+                        Icons.location_pin,
+                        color: Colors.red,
+                        size: 40,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 }
