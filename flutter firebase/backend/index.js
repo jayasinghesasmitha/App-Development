@@ -1,4 +1,4 @@
-const express = require('express');
+/*const express = require('express');
 const bodyParser = require('body-parser');
 const admin = require('firebase-admin');
 const cors = require('cors');
@@ -100,18 +100,39 @@ app.post('/save-selection', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
-});
-
+});*/
 
 /*
+"users": {
+  "userId123": {
+    "email": "user@example.com",
+    "selections": [
+      {
+        "selection": "Provide Information",
+        "weather": "Sunny",
+        "rainAmount": 10,
+        "stayingOrMoving": "Staying"
+      },
+      {
+        "selection": "Provide Information",
+        "weather": "Rainy",
+        "rainAmount": 50,
+        "stayingOrMoving": "Moving"
+      }
+    ]
+  }
+}
+*/
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const admin = require('firebase-admin');
 const cors = require('cors');
-const session = require('express-session'); // For session management
+const session = require('express-session'); 
+const path = require('path');
 
-// Initialize Firebase Admin SDK
-const serviceAccount = require('./weather-app-8dff8-firebase-adminsdk-fbsvc-341ee5b4cb.json');
+// Use absolute path to avoid MODULE_NOT_FOUND error
+const serviceAccount = require(path.join(__dirname, 'weather-app-8dff8-firebase-adminsdk-fbsvc-341ee5b4cb.json'));
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -125,15 +146,14 @@ const PORT = 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Set up sessions
 app.use(session({
-  secret: 'simple_secret_key', // Simple session secret
+  secret: 'simple_secret_key',
   resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false } // Secure: false allows HTTP (change to true for HTTPS)
+  saveUninitialized: false,
+  cookie: { secure: false }
 }));
 
-// Route to create a new user
+// Create Account
 app.post('/create-account', async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -145,14 +165,14 @@ app.post('/create-account', async (req, res) => {
     const usersRef = db.ref('users');
     const newUserRef = usersRef.push();
     await newUserRef.set({ username, email, password });
-    res.status(201).send({ message: 'Account created successfully.', userKey: newUserRef.key });
+    res.status(201).send({ message: 'Account created.', userKey: newUserRef.key });
   } catch (error) {
-    console.error('Error creating account:', error);
-    res.status(500).send({ message: 'Failed to create account.', error });
+    console.error('Error:', error);
+    res.status(500).send({ message: 'Error creating account.', error });
   }
 });
 
-// Route to validate user login
+// Login
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -167,61 +187,78 @@ app.post('/login', async (req, res) => {
     if (users) {
       const userKey = Object.keys(users).find(key => users[key].email === email && users[key].password === password);
       if (userKey) {
-        req.session.userKey = userKey; // Store userKey in session
+        req.session.userKey = userKey;
         return res.status(200).send({ message: 'Login successful.', email: users[userKey].email, username: users[userKey].username });
       }
     }
-
-    res.status(401).send({ message: 'Invalid email or password.' });
+    res.status(401).send({ message: 'Invalid credentials.' });
   } catch (error) {
-    console.error('Error validating user:', error);
-    res.status(500).send({ message: 'Error validating user.', error });
+    console.error('Error:', error);
+    res.status(500).send({ message: 'Login error.', error });
   }
 });
 
-// Route to save selection under the logged-in user
 app.post('/save-selection', async (req, res) => {
-  if (!req.session.userKey) {
-    return res.status(401).json({ message: 'User not logged in.' });
-  }
+  const { email, selection, weather, rainAmount, movement } = req.body;
 
-  const { selection, weather, rainAmount, stayingOrMoving } = req.body;
+  // Log the incoming data for debugging
+  console.log('Received data:', req.body);
 
-  if (!selection) {
-    return res.status(400).json({ message: 'Selection is required.', receivedData: req.body });
+  if (!email || !selection) {
+    return res.status(400).send({ message: 'Email and selection are required.' });
   }
 
   try {
-    const userSelectionsRef = db.ref(`users/${req.session.userKey}/selections/${selection}`);
+    const usersRef = db.ref('users');
+    const usersSnapshot = await usersRef.orderByChild('email').equalTo(email).once('value');
 
-    // Create a new selection entry with all provided data
-    const newSelectionData = {
-      weather: weather !== undefined ? weather : null,
-      rainAmount: rainAmount !== undefined ? rainAmount : null,
-      stayingOrMoving: stayingOrMoving !== undefined ? stayingOrMoving : null,
-      timestamp: Date.now()
-    };
+    if (!usersSnapshot.exists()) {
+      return res.status(404).send({ message: 'User not found.' });
+    }
 
-    // Use `push()` to append new data instead of overwriting existing selections
-    await userSelectionsRef.push(newSelectionData);
+    const userKey = Object.keys(usersSnapshot.val())[0];
+    const userSelectionsRef = db.ref(`users/${userKey}/selections`);
 
-    res.status(200).json({ message: 'Selection saved successfully.', savedData: newSelectionData });
+    let selectionsSnapshot = await userSelectionsRef.once('value');
+    let selections = selectionsSnapshot.val() || {};
+
+    // If the user selects "Provide Information" initially, we check if it's already in the database
+    if (selection === "Provide Information") {
+      if (!selections.hasOwnProperty("Provide Information")) {
+        // Initialize the "Provide Information" entry if it doesn't exist yet
+        selections["Provide Information"] = { weather: null, rainAmount: null, movement: null };
+        await userSelectionsRef.set(selections); // Save the empty data for the first time
+        return res.status(200).send({ message: 'Selection "Provide Information" saved successfully. Now provide weather information.' });
+      } else {
+        // If data exists, update it with the new weather information
+        selections["Provide Information"] = { weather, rainAmount, movement };
+        await userSelectionsRef.set(selections);
+        return res.status(200).send({ message: 'Selection "Provide Information" updated successfully.' });
+      }
+    }
+
+    // Handle the "Get Information" case
+    if (selection === "Get Information") {
+      selections["Get Information"] = "User requested information";
+      await userSelectionsRef.set(selections);
+      return res.status(200).send({ message: 'Selection "Get Information" saved successfully.' });
+    }
+
+    // Fallback in case selection type doesn't match any known options
+    return res.status(400).send({ message: 'Invalid selection.' });
+
   } catch (error) {
     console.error('Error saving selection:', error);
-    res.status(500).json({ message: 'Error saving selection.', error: error.message });
+    return res.status(500).send({
+      message: 'Error saving selection.',
+      error: error.message || error
+    });
   }
 });
 
-// Route to logout the user
-app.post('/logout', (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-      return res.status(500).send({ message: 'Logout failed.' });
-    }
-    res.status(200).send({ message: 'Logged out successfully.' });
-  });
-});
+
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
-});      */
+});
