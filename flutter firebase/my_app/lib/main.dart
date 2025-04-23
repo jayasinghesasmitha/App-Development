@@ -6,7 +6,7 @@ import 'pages/homepage.dart';
 import 'pages/login.dart';
 import 'pages/options.dart';
 import 'pages/provideinfo.dart';
-import 'pages/result.dart';
+import 'pages/confirmation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,16 +35,22 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       onGenerateRoute: (settings) {
         // Handle named routes with arguments
-        if (settings.name == '/options') {
-          final args = settings.arguments as String; 
-          return MaterialPageRoute(
-            builder: (context) => OptionsPage(email: args),
-          );
-        } else if (settings.name == '/result') {
-          final args = settings.arguments as String; 
-          return MaterialPageRoute(
-            builder: (context) => ResultPage(selectedOption: args),
-          );
+        switch (settings.name) {
+          case '/options':
+            final args = settings.arguments as String;
+            return MaterialPageRoute(
+              builder: (context) => OptionsPage(email: args),
+            );
+          case '/provideinfo':
+            final args = settings.arguments as String;
+            return MaterialPageRoute(
+              builder: (context) => ProvideInfoPage(email: args),
+            );
+          case '/confirmation':
+            final args = settings.arguments as String;
+            return MaterialPageRoute(
+              builder: (context) => ConfirmationPage(email: args),
+            );
         }
 
         // Default routes
@@ -53,7 +59,6 @@ class MyApp extends StatelessWidget {
           '/createaccount': (context) => CreateAccountPage(),
           '/getinfo': (context) => GetInfoPage(),
           '/login': (context) => LoginPage(),
-          '/provideinfo': (context) => ProvideInfoPage(),
         };
 
         final builder = routes[settings.name];
@@ -65,10 +70,8 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (context) => const Scaffold(
             body: Center(child: Text('Page not found')),
-          ),
-        );
+        ));
       },
     );
   }
 }
-
