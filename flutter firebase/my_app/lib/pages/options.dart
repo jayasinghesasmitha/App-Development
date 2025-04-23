@@ -8,7 +8,7 @@ class OptionsPage extends StatelessWidget {
   final String email;
   const OptionsPage({super.key, required this.email});
 
-  String get apiUrl => 'http:////localhost:3000/save-selection'; 
+  String get apiUrl => 'http://localhost:3000/save-selection';
 
   Future<void> saveSelection(String selection) async {
     final url = Uri.parse(apiUrl);
@@ -45,11 +45,12 @@ class OptionsPage extends StatelessWidget {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () async {
-                await saveSelection('Provide Information');
+              onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProvideInfoPage()),
+                  MaterialPageRoute(
+                    builder: (context) => ProvideInfoPage(email: email),
+                  ),
                 );
               },
               child: Text('Provide Information'),
