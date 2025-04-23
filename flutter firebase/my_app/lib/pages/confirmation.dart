@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/pages/options.dart';
+import 'package:my_app/pages/login.dart'; // Import login page
 
 class ConfirmationPage extends StatelessWidget {
   final String email;
@@ -18,18 +18,17 @@ class ConfirmationPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Form submitted successfully!',
+              'Information submitted successfully!',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Navigate to the OptionsPage
-                Navigator.pushReplacement(
+                // Navigate to LoginPage and remove all previous routes
+                Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => OptionsPage(email: email),
-                  ),
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                  (Route<dynamic> route) => false,
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -41,7 +40,7 @@ class ConfirmationPage extends StatelessWidget {
                 elevation: 8,
               ),
               child: Text(
-                'OK',
+                'Back to Login',
                 style: TextStyle(fontSize: 18, color: Colors.white),
               ),
             ),
