@@ -216,11 +216,9 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Save User Selection
+// Update the /save-selection endpoint in index.js
 app.post('/save-selection', async (req, res) => {
-  const { email, selection, weather, rainAmount, movement, location, isCurrentLocation } = req.body;
-
-  console.log('Received data:', req.body);
+  const { email, selection, weather, rainAmount, movement } = req.body;
 
   if (!email || !selection || !weather || rainAmount === undefined || !movement) {
     return res.status(400).send({ message: 'All fields are required.' });
@@ -235,44 +233,31 @@ app.post('/save-selection', async (req, res) => {
     }
 
     const userKey = Object.keys(usersSnapshot.val())[0];
-    const userSelectionsRef = db.ref(`users/${userKey}/selections`);
+    const userInfoRef = db.ref(`users/${userKey}/information`);
 
-    let selectionsSnapshot = await userSelectionsRef.once('value');
-    let selections = selectionsSnapshot.val() || [];
+    let infoSnapshot = await userInfoRef.once('value');
+    let information = infoSnapshot.val() || [];
 
-    let newSelection = {
-      selection,
+    const newInfo = {
       weather,
       rainAmount: Number(rainAmount),
-      stayingOrMoving: movement
+      movement,
+      timestamp: req.body.timestamp || admin.database.ServerValue.TIMESTAMP
     };
 
-    // Handle location storage when "Get Information" is selected
-    if (selection === "Get Information") {
-      if (isCurrentLocation) {
-        newSelection.trackedLocation = location;  // Store user's current location (latitude, longitude)
-      } else {
-        newSelection.selectedPlace = location;  // Store manually selected place from the map
-      }
-    }
+    information.push(newInfo);
+    await userInfoRef.set(information);
 
-    // Add new selection to the array
-    selections.push(newSelection);
-
-    // Save updated selections array
-    await userSelectionsRef.set(selections);
-
-    return res.status(200).send({ message: 'Selection saved successfully.', selections });
+    return res.status(200).send({ message: 'Information saved successfully.' });
 
   } catch (error) {
-    console.error('Error saving selection:', error);
+    console.error('Error saving information:', error);
     return res.status(500).send({
-      message: 'Error saving selection.',
+      message: 'Error saving information.',
       error: error.message || error
     });
   }
 });
-
 
 // ✅ Start Server
 app.listen(PORT, () => {
