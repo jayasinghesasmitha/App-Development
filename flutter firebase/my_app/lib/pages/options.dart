@@ -33,17 +33,17 @@ class OptionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Options'),
+        title: const Text('Options'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               'Choose an Option',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -53,18 +53,20 @@ class OptionsPage extends StatelessWidget {
                   ),
                 );
               },
-              child: Text('Provide Information'),
+              child: const Text('Provide Information'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 await saveSelection('Get Information');
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => GetInfoPage()),
+                  MaterialPageRoute(
+                    builder: (context) => GetInfoPage(email: email),
+                  ),
                 );
               },
-              child: Text('Get Information'),
+              child: const Text('Get Information'),
             ),
           ],
         ),
