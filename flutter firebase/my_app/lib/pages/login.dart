@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/pages/createaccount.dart';
-import 'package:my_app/pages/options.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:my_app/pages/createaccount.dart';
+import 'package:my_app/pages/options.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  LoginPage({super.key});
 
   Future<Map<String, dynamic>?> validateUser(String email, String password) async {
     try {
@@ -18,7 +20,6 @@ class LoginPage extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        // Successful login; return user details
         return jsonDecode(response.body);
       } else {
         print('Login failed: ${response.body}');
@@ -40,7 +41,7 @@ class LoginPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
+              const Text(
                 'Login',
                 style: TextStyle(
                   fontSize: 32,
@@ -49,19 +50,19 @@ class LoginPage extends StatelessWidget {
                 ),
                 textAlign: TextAlign.start,
               ),
-              SizedBox(height: 10),
-              Text(
+              const SizedBox(height: 10),
+              const Text(
                 'Please sign in to continue.',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextField(
                 controller: emailController,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.email_outlined),
+                  prefixIcon: const Icon(Icons.email_outlined),
                   hintText: 'user123@email.com',
                   labelText: 'EMAIL',
                   border: OutlineInputBorder(
@@ -69,21 +70,21 @@ class LoginPage extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextField(
                 controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock_outline),
+                  prefixIcon: const Icon(Icons.lock_outline),
                   labelText: 'PASSWORD',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   suffixText: 'FORGOT',
-                  suffixStyle: TextStyle(color: Colors.orange),
+                  suffixStyle: const TextStyle(color: Colors.orange),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   final email = emailController.text.trim();
@@ -96,14 +97,13 @@ class LoginPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => OptionsPage(
-                            // Pass actual email
-                            email: userDetails['email'], 
+                            email: userDetails['email'],
                           ),
                         ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text('Invalid email or password'),
                           backgroundColor: Colors.red,
                         ),
@@ -111,7 +111,7 @@ class LoginPage extends StatelessWidget {
                     }
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
+                      const SnackBar(
                         content: Text('Please fill in all fields'),
                         backgroundColor: Colors.red,
                       ),
@@ -123,9 +123,9 @@ class LoginPage extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
@@ -137,15 +137,15 @@ class LoginPage extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     "Don't have an account?",
                     style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -155,12 +155,13 @@ class LoginPage extends StatelessWidget {
                         ),
                       );
                     },
-                    child: Text(
+                    child: const Text(
                       'Sign up',
                       style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange,
+                      ),
                     ),
                   ),
                 ],
