@@ -5,7 +5,6 @@ const cors = require('cors');
 const session = require('express-session');
 const path = require('path');
 
-// ✅ Load Firebase Admin SDK
 const serviceAccount = require(path.join(__dirname, 'weather-app-8dff8-firebase-adminsdk-fbsvc-341ee5b4cb.json'));
 
 admin.initializeApp({
@@ -27,10 +26,8 @@ app.use(session({
   cookie: { secure: false }
 }));
 
-// ✅ Firebase Debugging Log
 admin.database.enableLogging(true);
 
-// ✅ Check if Firebase is working
 app.get('/test-firebase', async (req, res) => {
   try {
     const testRef = db.ref('test');
@@ -42,7 +39,6 @@ app.get('/test-firebase', async (req, res) => {
   }
 });
 
-// ✅ Create Account
 app.post('/create-account', async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -63,7 +59,6 @@ app.post('/create-account', async (req, res) => {
   }
 });
 
-// ✅ Login
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -90,7 +85,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ✅ Save Selection with Location
 app.post('/save-selection', async (req, res) => {
   const { email, selection, weather, rainAmount, movement, timestamp, location } = req.body;
 
@@ -117,7 +111,7 @@ app.post('/save-selection', async (req, res) => {
       rainAmount: Number(rainAmount),
       movement,
       timestamp: timestamp || admin.database.ServerValue.TIMESTAMP,
-      location: location || null // Store location if provided, otherwise null
+      location: location || null
     };
 
     information.push(newInfo);
@@ -134,7 +128,6 @@ app.post('/save-selection', async (req, res) => {
   }
 });
 
-// ✅ Start Server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
