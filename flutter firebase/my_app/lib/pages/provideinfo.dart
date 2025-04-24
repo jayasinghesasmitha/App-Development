@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_app/pages/confirmation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
 
 class ProvideInfoPage extends StatefulWidget {
   final String email;
@@ -16,6 +17,72 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
   String _selectedWeather = "Sunny";
   double _rainAmount = 0.0;
   String _stayingOrMoving = "Staying";
+  Position? _currentPosition;
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Location services are disabled.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Check location permissions
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Location permissions are denied.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Location permissions are permanently denied.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Get the current position
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      setState(() {
+        _currentPosition = position;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error getting location: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   Future<void> _submitForm() async {
     final Map<String, dynamic> formData = {
@@ -25,6 +92,12 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
       "rainAmount": _rainAmount,
       "movement": _stayingOrMoving,
       "timestamp": DateTime.now().toIso8601String(),
+      "location": _currentPosition != null
+          ? {
+              "latitude": _currentPosition!.latitude,
+              "longitude": _currentPosition!.longitude,
+            }
+          : null,
     };
 
     try {
