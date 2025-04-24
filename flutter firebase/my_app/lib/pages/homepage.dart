@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:my_app/pages/login.dart';
 
 class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient with weather theme
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -22,11 +23,9 @@ class HomePage extends StatelessWidget {
               ),
             ),
           ),
-          // Animated weather icons overlay (e.g., rain drops, sun)
           Positioned.fill(
-            child: WeatherEffect(),
+            child: const WeatherEffect(),
           ),
-          // Left Content with text and button
           Align(
             alignment: Alignment.centerLeft,
             child: Padding(
@@ -35,7 +34,7 @@ class HomePage extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Your Personal Weather Companion',
                     style: TextStyle(
                       fontSize: 36,
@@ -50,8 +49,8 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: 16),
-                  Text(
+                  const SizedBox(height: 16),
+                  const Text(
                     'Stay updated with accurate weather forecasts and be prepared for the day ahead.',
                     style: TextStyle(
                       fontSize: 18,
@@ -59,7 +58,7 @@ class HomePage extends StatelessWidget {
                       height: 1.5,
                     ),
                   ),
-                  SizedBox(height: 32),
+                  const SizedBox(height: 32),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -69,12 +68,12 @@ class HomePage extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Get Started',
                       style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
@@ -83,11 +82,10 @@ class HomePage extends StatelessWidget {
               ),
             ),
           ),
-          // Right side with weather illustration
           Align(
             alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.all(32.0),
+            child: const Padding(
+              padding: EdgeInsets.all(32.0),
               child: AnimatedWeatherImage(),
             ),
           ),
@@ -98,14 +96,15 @@ class HomePage extends StatelessWidget {
 }
 
 class WeatherEffect extends StatelessWidget {
+  const WeatherEffect({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return const Stack(
       children: [
-        // Add rain or sun effects
         Positioned.fill(
           child: IgnorePointer(
-            child: RainEffect(), 
+            child: RainEffect(),
           ),
         ),
       ],
@@ -114,6 +113,8 @@ class WeatherEffect extends StatelessWidget {
 }
 
 class RainEffect extends StatelessWidget {
+  const RainEffect({super.key});
+
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
@@ -144,6 +145,8 @@ class RainPainter extends CustomPainter {
 }
 
 class AnimatedWeatherImage extends StatefulWidget {
+  const AnimatedWeatherImage({super.key});
+
   @override
   _AnimatedWeatherImageState createState() => _AnimatedWeatherImageState();
 }
@@ -158,7 +161,7 @@ class _AnimatedWeatherImageState extends State<AnimatedWeatherImage>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 3),
+      duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
     _animation = Tween<double>(begin: 0.8, end: 1.2).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
@@ -180,11 +183,11 @@ class _AnimatedWeatherImageState extends State<AnimatedWeatherImage>
         width: 250,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          image: DecorationImage(
-            image: AssetImage('assets/sunny.png'), 
+          image: const DecorationImage(
+            image: AssetImage('assets/sunny.png'),
             fit: BoxFit.cover,
           ),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: Colors.black26,
               blurRadius: 15,
