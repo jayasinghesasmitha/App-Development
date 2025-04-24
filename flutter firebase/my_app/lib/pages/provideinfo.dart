@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/pages/confirmation.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:geolocator/geolocator.dart';
+import 'package:my_app/pages/confirmation.dart';
 
 class ProvideInfoPage extends StatefulWidget {
   final String email;
@@ -29,11 +29,10 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Location services are disabled.'),
           backgroundColor: Colors.red,
         ),
@@ -41,13 +40,12 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
       return;
     }
 
-    // Check location permissions
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Location permissions are denied.'),
             backgroundColor: Colors.red,
           ),
@@ -58,7 +56,7 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
 
     if (permission == LocationPermission.deniedForever) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Location permissions are permanently denied.'),
           backgroundColor: Colors.red,
         ),
@@ -66,7 +64,6 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
       return;
     }
 
-    // Get the current position
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
@@ -116,7 +113,7 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Failed to save information'),
             backgroundColor: Colors.red,
           ),
@@ -136,7 +133,7 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Provide Information'),
+        title: const Text('Provide Information'),
         backgroundColor: Colors.deepPurple,
       ),
       body: SingleChildScrollView(
@@ -146,23 +143,23 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildWeatherCard(),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               _buildRainSliderCard(),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               _buildStayingOrMovingCard(),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
                   onPressed: _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
                     elevation: 8,
                   ),
-                  child: Text(
+                  child: const Text(
                     'Submit',
                     style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
@@ -187,7 +184,7 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'What kind of weather is it right now?',
               style: TextStyle(
                 fontSize: 18,
@@ -195,17 +192,17 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
                 color: Colors.deepPurple,
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             DropdownButton<String>(
               value: _selectedWeather,
               isExpanded: true,
-              underline: SizedBox(),
+              underline: const SizedBox(),
               items: ["Sunny", "Rainy", "Windy", "Cloudy"].map((weather) {
                 return DropdownMenuItem<String>(
                   value: weather,
                   child: Text(
                     weather,
-                    style: TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16),
                   ),
                 );
               }).toList(),
@@ -233,7 +230,7 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'How much rain is there?',
               style: TextStyle(
                 fontSize: 18,
@@ -241,7 +238,7 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
                 color: Colors.lightBlue,
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Slider(
               value: _rainAmount,
               min: 0,
@@ -272,7 +269,7 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Are you staying or moving within the next 15 minutes?',
               style: TextStyle(
                 fontSize: 18,
@@ -280,13 +277,13 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
                 color: Colors.green,
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
                   child: RadioListTile<String>(
                     activeColor: Colors.green,
-                    title: Text('Staying'),
+                    title: const Text('Staying'),
                     value: "Staying",
                     groupValue: _stayingOrMoving,
                     onChanged: (value) {
@@ -299,7 +296,7 @@ class _ProvideInfoPageState extends State<ProvideInfoPage> {
                 Expanded(
                   child: RadioListTile<String>(
                     activeColor: Colors.green,
-                    title: Text('Moving'),
+                    title: const Text('Moving'),
                     value: "Moving",
                     groupValue: _stayingOrMoving,
                     onChanged: (value) {
