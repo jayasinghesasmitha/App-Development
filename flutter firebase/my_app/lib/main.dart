@@ -11,15 +11,15 @@ import 'pages/confirmation.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: FirebaseOptions(
+    options: const FirebaseOptions(
       apiKey: 'AIzaSyAt2nLKOH4YxY70aTZ1qwxUV2hdwNLWJMo',
       appId: '1:426540662257:web:ca195e65993ed6b4215850',
       messagingSenderId: '426540662257',
       projectId: 'weather-app-8dff8',
-      databaseURL: "https://weather-app-8dff8-default-rtdb.asia-southeast1.firebasedatabase.app", 
+      databaseURL: "https://weather-app-8dff8-default-rtdb.asia-southeast1.firebasedatabase.app",
     ),
   );
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -34,7 +34,6 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       onGenerateRoute: (settings) {
-        // Handle named routes with arguments
         switch (settings.name) {
           case '/options':
             final args = settings.arguments as String;
@@ -51,13 +50,16 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => ConfirmationPage(email: args),
             );
+          case '/getinfo':
+            final args = settings.arguments as String;
+            return MaterialPageRoute(
+              builder: (context) => GetInfoPage(email: args),
+            );
         }
 
-        // Default routes
         final routes = {
-          '/': (context) => HomePage(),
+          '/': (context) => const HomePage(),
           '/createaccount': (context) => CreateAccountPage(),
-          '/getinfo': (context) => GetInfoPage(),
           '/login': (context) => LoginPage(),
         };
 
@@ -66,11 +68,11 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(builder: builder);
         }
 
-        // Handle unknown routes
         return MaterialPageRoute(
           builder: (context) => const Scaffold(
             body: Center(child: Text('Page not found')),
-        ));
+          ),
+        );
       },
     );
   }
