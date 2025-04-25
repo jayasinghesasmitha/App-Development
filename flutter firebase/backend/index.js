@@ -16,6 +16,9 @@ const db = admin.database();
 const app = express();
 const PORT = 3000;
 
+// Expiry duration: 15 minutes (in milliseconds)
+const EXPIRY_DURATION_MS = 15 * 60 * 1000; // 900,000 ms
+
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -28,6 +31,7 @@ app.use(session({
 
 admin.database.enableLogging(true);
 
+// Test Firebase connection
 app.get('/test-firebase', async (req, res) => {
   try {
     const testRef = db.ref('test');
@@ -39,6 +43,7 @@ app.get('/test-firebase', async (req, res) => {
   }
 });
 
+// Create account endpoint
 app.post('/create-account', async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -59,6 +64,7 @@ app.post('/create-account', async (req, res) => {
   }
 });
 
+// Login endpoint
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -85,6 +91,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// Save selection endpoint with expiration
 app.post('/save-selection', async (req, res) => {
   const { email, selection, weather, rainAmount, movement, timestamp, location } = req.body;
 
@@ -106,11 +113,16 @@ app.post('/save-selection', async (req, res) => {
     let infoSnapshot = await userInfoRef.once('value');
     let information = infoSnapshot.val() || [];
 
+    // Use server timestamp if client timestamp is not provided
+    const submissionTimestamp = timestamp ? new Date(timestamp).getTime() : admin.database.ServerValue.TIMESTAMP;
+    const expirationTimestamp = (typeof submissionTimestamp === 'number' ? submissionTimestamp : Date.now()) + EXPIRY_DURATION_MS;
+
     const newInfo = {
       weather,
       rainAmount: Number(rainAmount),
       movement,
-      timestamp: timestamp || admin.database.ServerValue.TIMESTAMP,
+      timestamp: submissionTimestamp,
+      expirationTimestamp: expirationTimestamp,
       location: location || null
     };
 
@@ -118,7 +130,6 @@ app.post('/save-selection', async (req, res) => {
     await userInfoRef.set(information);
 
     return res.status(200).send({ message: 'Information saved successfully.' });
-
   } catch (error) {
     console.error('Error saving information:', error);
     return res.status(500).send({
@@ -128,6 +139,126 @@ app.post('/save-selection', async (req, res) => {
   }
 });
 
+// Get non-expired weather information endpoint
+app.get('/get-information', async (req, res) => {
+  try {
+    const usersRef = db.ref('users');
+    const usersSnapshot = await usersRef.once('value');
+    const users = usersSnapshot.val();
+
+    if (!users) {
+      return res.status(200).send({ message: 'No data available.', data: [] });
+    }
+
+    const currentTime = Date.now();
+    let allInformation = [];
+
+    // Iterate through all users and their information
+    for (const userKey of Object.keys(users)) {
+      const userInfoRef = db.ref(`users/${userKey}/information`);
+      const infoSnapshot = await userInfoRef.once('value');
+      const information = infoSnapshot.val();
+
+      if (!information) continue;
+
+      // Filter out expired data
+      const nonExpiredInfo = information.filter(entry => {
+        const expirationTimestamp = entry.expirationTimestamp;
+        return expirationTimestamp && currentTime < expirationTimestamp;
+      });
+
+      // Add user email to each entry for client-side display
+      const userEmail = users[userKey].email;
+      const formattedInfo = nonExpiredInfo.map(entry => ({
+        email: userEmail,
+        weather: entry.weather,
+        rainAmount: entry.rainAmount,
+        movement: entry.movement,
+        timestamp: entry.timestamp,
+        location: entry.location
+      }));
+
+      allInformation = allInformation.concat(formattedInfo);
+    }
+
+    if (allInformation.length === 0) {
+      return res.status(200).send({ message: 'No non-expired data available.', data: [] });
+    }
+
+    return res.status(200).send({ message: 'Information retrieved successfully.', data: allInformation });
+  } catch (error) {
+    console.error('Error retrieving information:', error);
+    return res.status(500).send({
+      message: 'Error retrieving information.',
+      error: error.message || error
+    });
+  }
+});
+
+// Function to move expired data to expired_data node
+async function moveExpiredData() {
+  try {
+    const usersRef = db.ref('users');
+    const usersSnapshot = await usersRef.once('value');
+    const users = usersSnapshot.val();
+
+    if (!users) return;
+
+    const expiredDataRef = db.ref('expired_data');
+    let expiredEntries = [];
+
+    for (const userKey of Object.keys(users)) {
+      const userInfoRef = db.ref(`users/${userKey}/information`);
+      const infoSnapshot = await userInfoRef.once('value');
+      let information = infoSnapshot.val();
+
+      if (!information) continue;
+
+      const currentTime = Date.now();
+      let updatedInformation = [];
+      let expiredForUser = [];
+
+      for (const entry of information) {
+        const expirationTimestamp = entry.expirationTimestamp;
+        if (expirationTimestamp && currentTime >= expirationTimestamp) {
+          // Remove user-specific data and prepare for expired_data
+          const expiredEntry = {
+            weather: entry.weather,
+            rainAmount: entry.rainAmount,
+            movement: entry.movement,
+            timestamp: entry.timestamp,
+            location: entry.location,
+            expiredAt: currentTime
+          };
+          expiredForUser.push(expiredEntry);
+        } else {
+          updatedInformation.push(entry);
+        }
+      }
+
+      // Update user's information by removing expired entries
+      if (updatedInformation.length !== information.length) {
+        await userInfoRef.set(updatedInformation.length > 0 ? updatedInformation : null);
+      }
+
+      expiredEntries = expiredEntries.concat(expiredForUser);
+    }
+
+    // Save expired entries to expired_data node
+    if (expiredEntries.length > 0) {
+      const newExpiredRef = expiredDataRef.push();
+      await newExpiredRef.set(expiredEntries);
+      console.log(`Moved ${expiredEntries.length} expired entries to expired_data.`);
+    }
+  } catch (error) {
+    console.error('Error moving expired data:', error);
+  }
+}
+
+// Run the expiration check every minute
+setInterval(moveExpiredData, 60 * 1000);
+
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
