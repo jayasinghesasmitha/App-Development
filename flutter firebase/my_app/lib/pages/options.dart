@@ -33,7 +33,7 @@ class OptionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Explore Nature'),
+        title: const Text('Select what you want'),
         backgroundColor: Colors.green.shade700,
         elevation: 0,
         flexibleSpace: Container(
