@@ -16,8 +16,9 @@ const db = admin.database();
 const app = express();
 const PORT = 3000;
 
-// Expiry duration: 15 minutes (in milliseconds)
-const EXPIRY_DURATION_MS = 15 * 60 * 1000; // 900,000 ms
+// Expiry durations (in milliseconds)
+const EXPIRY_DURATION_STAYING_MS = 15 * 60 * 1000; // 15 minutes for Staying
+const EXPIRY_DURATION_MOVING_MS = 5 * 60 * 1000;  // 5 minutes for Moving
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -91,7 +92,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Save selection endpoint with expiration
+// Save selection endpoint with dynamic expiration based on movement
 app.post('/save-selection', async (req, res) => {
   const { email, selection, weather, rainAmount, movement, timestamp, location } = req.body;
 
@@ -115,7 +116,10 @@ app.post('/save-selection', async (req, res) => {
 
     // Use server timestamp if client timestamp is not provided
     const submissionTimestamp = timestamp ? new Date(timestamp).getTime() : admin.database.ServerValue.TIMESTAMP;
-    const expirationTimestamp = (typeof submissionTimestamp === 'number' ? submissionTimestamp : Date.now()) + EXPIRY_DURATION_MS;
+
+    // Set expiration time based on movement
+    const expiryDuration = movement === 'Moving' ? EXPIRY_DURATION_MOVING_MS : EXPIRY_DURATION_STAYING_MS;
+    const expirationTimestamp = (typeof submissionTimestamp === 'number' ? submissionTimestamp : Date.now()) + expiryDuration;
 
     const newInfo = {
       weather,
