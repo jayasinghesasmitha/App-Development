@@ -1,0 +1,33 @@
+from flask import Flask, request, jsonify
+import joblib
+import pandas as pd
+
+# Step 1: Load the trained model and encoders
+model = joblib.load('weather_predictor.pkl')
+weather_encoder = joblib.load('weather_encoder.pkl')
+movement_encoder = joblib.load('movement_encoder.pkl')
+
+# Step 2: Create a Flask app (a small web server)
+app = Flask(__name__)
+
+# Step 3: Define a route for predictions
+@app.route('/predict', methods=['POST'])
+def predict():
+    # Get the data sent by the app
+    data = request.json
+    
+    # Convert the data into a table (DataFrame) that the model can use
+    df = pd.DataFrame([data])
+    
+    # Make a prediction
+    prediction = model.predict(df)[0]
+    
+    # Convert the predicted number back to a weather type (e.g., 0 -> "Sunny")
+    predicted_weather = weather_encoder.inverse_transform([prediction])[0]
+    
+    # Send the prediction back to the app
+    return jsonify({'prediction': predicted_weather})
+
+# Step 4: Start the Flask server
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
