@@ -21,7 +21,7 @@ async function fetchExpiredData() {
     }).join('\n');
 
     // Save the data to a CSV file in the ai-model folder
-    fs.writeFileSync('../ai model/weather_data.csv', csvHeader + csvRows);
+    fs.writeFileSync('../ai-model/weather_data.csv', csvHeader + csvRows);
     console.log('Expired data saved to weather_data.csv');
   } catch (error) {
     console.error('Error fetching expired data:', error);
