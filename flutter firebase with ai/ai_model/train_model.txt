@@ -1,0 +1,47 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+import joblib
+
+# Step 1: Load the data from the CSV file
+data = pd.read_csv('weather_data.csv')
+
+# Step 2: Prepare the data (convert text to numbers)
+# Convert weather (Sunny, Rainy, etc.) to numbers (0, 1, etc.)
+weather_encoder = LabelEncoder()
+data['weather'] = weather_encoder.fit_transform(data['weather'])
+
+# Convert movement (Staying, Moving) to numbers (0, 1)
+movement_encoder = LabelEncoder()
+data['movement'] = movement_encoder.fit_transform(data['movement'])
+
+# Extract hour and day of week from the timestamp
+data['timestamp'] = pd.to_datetime(data['timestamp'])
+data['hour'] = data['timestamp'].dt.hour
+data['dayOfWeek'] = data['timestamp'].dt.dayofweek
+
+# Step 3: Choose the features (inputs) and target (output)
+# Features are the inputs the model will use to make predictions
+X = data[['rainAmount', 'movement', 'hour', 'dayOfWeek', 'latitude', 'longitude']]
+# Target is what we want to predict (weather)
+y = data['weather']
+
+# Step 4: Split the data into training and testing sets
+# 80% for training, 20% for testing
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 5: Train the AI model (Random Forest)
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Step 6: Test the model
+y_pred = model.predict(X_test)
+accuracy = (y_pred == y_test).mean()
+print(f"Model accuracy: {accuracy * 100:.2f}%")
+
+# Step 7: Save the trained model and encoders
+joblib.dump(model, 'weather_predictor.pkl')
+joblib.dump(weather_encoder, 'weather_encoder.pkl')
+joblib.dump(movement_encoder, 'movement_encoder.pkl')
+print("Model and encoders saved!")
