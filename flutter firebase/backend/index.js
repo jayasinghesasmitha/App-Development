@@ -5,7 +5,7 @@ const cors = require('cors');
 const session = require('express-session');
 const path = require('path');
 
-const serviceAccount = require(path.join(__dirname, 'weather-app-8dff8-firebase-adminsdk-fbsvc-e6df4b0c78.json'));
+const serviceAccount = require(path.join(__dirname, 'weather-app-8dff8-firebase-adminsdk-fbsvc-58820b0427.json'));
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
