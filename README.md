@@ -1,4 +1,3 @@
-```markdown
 🌍 WeatherApp ⛅
 
 Your ultimate destination for real-time weather updates and forecasts! 🌟 WeatherApp combines precision, speed, and elegance to deliver reliable weather information, beautifully. With Firebase powering the database and a tech stack that packs a punch, WeatherApp is built to impress.
@@ -29,6 +28,8 @@ Getting started is easy:
 1. Clone the repository:
    ```bash
    git clone https://github.com/jayasinghesasmitha/App-Development.git
+   ```
+   
 2. Navigate to the project directory:
    ```bash
    cd flutter firebase
@@ -46,10 +47,8 @@ Getting started is easy:
    npm install firebase
    ```
 4. Other requirements
-   ```bash
    Other requirements and dependencies a=can be changed due to versions. And for backend Node.js needs to be in the running machine
-   ```
----
+
 
 🌐 How to Use
 1. 🌎 Start the App: Open WeatherApp on your device.
